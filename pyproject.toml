@@ -1,0 +1,30 @@
+[tool.poetry]
+name = "streamlit-agent"
+version = "0.1.0"
+description = ""
+authors = ["Tim Conkling <tconkling@gmail.com>", "Joshua Carroll <joshua.carroll@snowflake.com>"]
+license = "Apache 2.0"
+readme = "README.md"
+packages = [{include = "streamlit_agent"}]
+
+[tool.poetry.dependencies]
+python = ">=3.10,<4.0"
+langchain = {version = ">=0.1.0"}
+openai = ">=1.6.1"
+sentence-transformers = "^2.2.2"
+torch = ">=2.0.0, !=2.0.1"
+langchain-experimental = "^0.0.49"
+streamlit = ">=1.26"
+langchain-community = "^0.0.12"
+langchain-openai = "^0.0.2.post1"
+langchainhub = "^0.1.14"
+python-dotenv = ">=1.0.1"
+
+[tool.poetry.group.dev.dependencies]
+black = "^23.3.0"
+mypy = "^1.4.1"
+pre-commit = "^3.3.3"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
