@@ -18,9 +18,7 @@ class ChatApplication:
             max_context_len=self.config.chat_model.chatbot.max_context_len
         )
         self.setup_sidebar()
-
-        self.retriever = None
-        self.llm = None
+        self.initialize_components()
 
     def setup_sidebar(self):
         st.sidebar.title("Configuration")
@@ -57,10 +55,6 @@ class ChatApplication:
 
     def run(self):
         st.title("🤖 RAG-powered Chat Assistant")
-
-        if not self.initialize_components():
-            return
-
         self.display_chat_history()
 
         if prompt := st.chat_input(placeholder="Ask me anything!"):
