@@ -1,27 +1,27 @@
 import logging
 from langchain.text_splitter import CharacterTextSplitter
+import faiss
 from langchain_community.vectorstores import FAISS
-from langchain_openai import OpenAIEmbeddings
+from langchain_huggingface import HuggingFaceEmbeddings
 from langchain.prompts import ChatPromptTemplate
 from typing import List
 from config.config import FaissDBConfig
+
 
 class DocumentRetriever:
     def __init__(self, faiss_config: FaissDBConfig):
         self.logger = logging.getLogger("rag_chat.retriever")
         self.logger.info("Initializing DocumentRetriever")
-        self.embeddings = OpenAIEmbeddings(openai_api_key=faiss_config.openai_key)
-        self.vectorstore = None
-        self.prompt = ChatPromptTemplate.from_template("""
-            Use the following pieces of context to answer the question at the end.
-            If the context doesn't provide enough information, just say that you don't know, don't try to make up an answer.
-            Pay attention to the context of the question rather than just looking for similar keywords in the corpus.
-            Keep the answer as concise as possible.
-            Always say "thanks for asking!" at the end of the answer.
-            {context}
-            Question: {question}
-            Helpful Answer:
-        """)
+        self.embeddings = HuggingFaceEmbeddings(
+            model_name="intfloat/multilingual-e5-large",
+            model_kwargs={"trust_remote_code": True},
+            encode_kwargs={"batch_size": 1},
+        )
+        self.vectorstore = FAISS.load_local(
+            "/Users/nikolaikaliazin/Desktop/ArtRAG/data/e5_wikiart_small",
+            self.embeddings,
+            allow_dangerous_deserialization=True,
+        )
 
     def ingest_documents(self, documents: List[str]):
         self.logger.info(f"Ingesting {len(documents)} documents")
@@ -30,7 +30,7 @@ class DocumentRetriever:
         self.vectorstore = FAISS.from_documents(texts, self.embeddings)
         self.logger.info("Documents successfully ingested into vector store")
 
-    def get_relevant_documents(self, query: str, k: int = 4):
+    def get_relevant_documents(self, query: str, k: int = 5):
         if not self.vectorstore:
             self.logger.warning("Vector store is not initialized")
             return []
@@ -40,4 +40,19 @@ class DocumentRetriever:
     def get_prompt_messages(self, question: str):
         self.logger.debug(f"Generating prompt messages for question: {question[:50]}...")
         relevant_docs = self.get_relevant_documents(question)
-        return self.prompt.format_messages(context=relevant_docs, question=question) 
+
+        messages = [
+            {
+                "role": "user",
+                "content": f"""Use the following pieces of context to answer the question at the end.
+                If the context doesn't provide enough information, you can generate your own answer based on your knowledge, but don't say the answer isn't in context in such a case. If you are not sure of the correctness of your answer, say that you don't know the answer to the question..
+                Pay attention to the context of the question rather than just looking for similar keywords in the corpus.
+                Keep the answer as concise as possible.
+                Always say "thanks for asking!" at the end of the answer.
+                {relevant_docs}
+                Question: {question}
+                Helpful Answer:""",
+            }
+        ]
+
+        return messages
