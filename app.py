@@ -6,13 +6,12 @@ from streamlit_agent.retriever import DocumentRetriever
 from config.config import load_config, AiChatModel
 from config.logging_config import setup_logging
 from openai import AzureOpenAI
-from functools import lru_cache
 
+st.set_page_config(page_title="RAG-powered Chat", page_icon="🤖")
 
 class ChatApplication:
-    @lru_cache
     def __init__(self):
-        st.set_page_config(page_title="RAG-powered Chat", page_icon="🤖")
+        # st.set_page_config(page_title="RAG-powered Chat", page_icon="🤖")
         self.logger = setup_logging()
         self.logger.info("Initializing Chat Application")
         self.config = load_config()
@@ -20,7 +19,9 @@ class ChatApplication:
             max_context_len=self.config.chat_model.chatbot.max_context_len
         )
         self.setup_sidebar()
-        self.initialize_components()
+
+        self.retriever = self.initialize_retriever()
+        self.llm = self.initialize_llm()
 
     def setup_sidebar(self):
         st.sidebar.title("Configuration")
@@ -30,24 +31,17 @@ class ChatApplication:
             self.memory_manager.clear_memory()
             st.session_state.steps = {}
 
-    def initialize_components(self):
-        if not self.openai_api_key:
-            self.logger.error("OpenAI API key not configured")
-            st.info("Please check your OpenAI API key configuration.")
-            return False
+    @st.cache_resource
+    def initialize_retriever(_self):
+        return DocumentRetriever(_self.config.faiss_config)
 
-        print(self.llm)
-        if self.llm is None:
-            self.logger.info("Initializing LLM and Document Retriever")
-            model_params = self.config.chat_model.get_genai_chat_params()
-            self.llm = llm = AzureOpenAI(
-                api_version="2024-02-15-preview",
-                azure_endpoint="https://utbd.openai.azure.com",
-                api_key=self.openai_api_key,
-            )
-            self.retriever = DocumentRetriever(self.config.faiss_config)
-
-        return True
+    @st.cache_resource
+    def initialize_llm(_self):
+        return AzureOpenAI(
+            api_version="2024-02-15-preview",
+            azure_endpoint="https://utbd.openai.azure.com",
+            api_key=_self.openai_api_key,
+        )
 
     def display_chat_history(self):
         avatars = {"human": "user", "ai": "assistant"}
@@ -57,6 +51,7 @@ class ChatApplication:
 
     def run(self):
         st.title("🤖 RAG-powered Chat Assistant")
+
         self.display_chat_history()
 
         if prompt := st.chat_input(placeholder="Ask me anything!"):
