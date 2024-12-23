@@ -17,12 +17,11 @@ class DocumentRetriever:
             model_kwargs={"trust_remote_code": True},
             encode_kwargs={"batch_size": 1},
         )
-        self.vectorstore = None
-        # FAISS.load_local(
-        #     "/Users/nikolaikaliazin/Desktop/ArtRAG/e5_wikiart_small",
-        #     self.embeddings,
-        #     allow_dangerous_deserialization=True,
-        # )
+        self.vectorstore = FAISS.load_local(
+            "data/e5_wikiart_small",
+            self.embeddings,
+            allow_dangerous_deserialization=True,
+        )
 
     def ingest_documents(self, documents: List[str]):
         self.logger.info(f"Ingesting {len(documents)} documents")
