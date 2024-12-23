@@ -18,7 +18,7 @@ class DocumentRetriever:
             encode_kwargs={"batch_size": 1},
         )
         self.vectorstore = FAISS.load_local(
-            "data/e5_wikiart_small",
+            "e5_wikiart_small",
             self.embeddings,
             allow_dangerous_deserialization=True,
         )
