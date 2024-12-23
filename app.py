@@ -6,9 +6,11 @@ from streamlit_agent.retriever import DocumentRetriever
 from config.config import load_config, AiChatModel
 from config.logging_config import setup_logging
 from openai import AzureOpenAI
+from async_lru import alru_cache
 
 
 class ChatApplication:
+    @alru_cache
     def __init__(self):
         st.set_page_config(page_title="RAG-powered Chat", page_icon="🤖")
         self.logger = setup_logging()
