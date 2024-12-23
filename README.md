@@ -38,6 +38,7 @@
 
 Итоговый сервис разработан на Streamlit в виде веб-приложения. Наша команда выбрала вид чата, так как он достаточно удобен. 
 
-Инициализация сервиса: 
+Инициализация сервиса: ![alt text](https://github.com/ErrorZ403/ArtRAG/blob/main/images/RAG%20INIT.png)
+Ответ в сервисе: ![alt text](https://github.com/ErrorZ403/ArtRAG/blob/main/images/RAG%20Answer.png)
+Очистка истории: ![alt text](https://github.com/ErrorZ403/ArtRAG/blob/main/images/After%20Reset.png)
 
-![alt text](https://github.com/ErrorZ403/ArtRAG/images/After Reset.png)
